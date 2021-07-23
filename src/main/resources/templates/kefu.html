@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>小绿车客服</title>
+    <script src="/js/socket.io.js"></script>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+
+<div id="result"></div>
+<textarea id="outText" type="text" readonly="readonly" value="小绿车客服" cols="30" rows="10" ></textarea>
+<br>
+<textarea id="message" name="content" ></textarea>
+<input type="button" onclick="sendMessage()" value="发送"> </input>
+<input type="file" name="file" id="file-field" />
+<div id="img-container">
+    <ul id="img-list"></ul>
+</div>
+<script>
+    //var socket = io.connect('${schema!'http'}://'+hostname+':${port}/im/user?userid=${userid!''}&orgi=${orgi!''}&session=${sessionid!''}&appid=${appid!''}&osname=${(osname!'')?url}&browser=${(browser!'')?url}<#if skill??>&skill=${skill}</#if><#if username??>&nickname=${username}</#if><#if agent??>&agent=${agent}</#if>');
+    var socket = io.connect("http://10.33.60.8:9099/im/user");
+
+
+    // Do something on upload progress:
+
+
+    // Do something when a file is uploaded:
+
+
+    socket.on('connect',function(){
+        //service.sendRequestMessage();
+        //output('<span id="connect-message">'+ new Date().format("yyyy-MM-dd hh:mm:ss") + ' 开始沟通' +'</span>' , 'message connect-message');
+        alert("连接成功");
+    })
+    socket.on("agentstatus",function(data){
+
+        alert("客服状态:"+data);
+    });
+    socket.on("status",function(data){
+
+       console.log("客服状态:"+data);
+    });
+    socket.on('message', function(data) {
+
+       var outText = document.getElementById("outText");
+       outText.value = outText.value+"\n"+"客服: "+data;
+        console.log("客服说:"+data);
+
+    });
+
+    socket.on('disconnect',function() {
+        //output('<span id="connect-message">连接坐席失败，在线咨询服务不可用</span>' , 'message connect-message');
+        console.log("与客服断开连接···");
+    });
+
+    socket.on('img',function(file) {
+        var arrayBuffer = new Uint8Array(file).buffer;
+        var blob        = new Blob([arrayBuffer]);
+
+        var imgList = $('ul#img-list');
+
+        var li = $('<li/>').appendTo(imgList);
+        $('<div/>').text(file.name).appendTo(li);
+        var img = $('<img/>').appendTo(li);
+
+        var reader = new FileReader();
+        reader.onload = (function(aImg) {
+            return function(e) {
+                aImg.attr('src', e.target.result);
+                aImg.attr('width', 150);
+            };
+        })(img);
+
+        reader.readAsDataURL(blob);
+    });
+
+    function sendDisconnect(){
+        socket.disconnect();
+    }
+    function sendMessage() {
+        var message = document.getElementById('message').value;
+        socket.emit('message',message);
+        testarea=document.getElementById("message");
+        testarea.value=""
+    }
+    $(document).ready(function() {
+
+        var fileInput = $('#file-field');
+
+        fileInput.bind({
+            change: function() {
+                displayFiles(this.files);
+            }
+        });
+
+        function displayFiles(files) {
+            $.each(files, function(i, file) {
+                if (!file.type.match(/image.*/)) {
+                    return true;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    socket.emit('img', e.target.result);
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+    });
+
+</script>
+</body>
+</html>
