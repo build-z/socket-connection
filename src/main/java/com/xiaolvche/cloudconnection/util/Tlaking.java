@@ -83,10 +83,10 @@ public class Tlaking {
         }
         return null;
     }
-    public SocketIOClient getClient(String agentid){
-        if(agentid==null)return null;
+    public SocketIOClient getClient(String agentid,String clientid){
+        if(agentid==null||clientid==null)return null;
         for (Conversation c:seat) {
-            if(agentid.equals(PasIp.getIp(c.getAgent().getRemoteAddress()))){
+            if(agentid.equals(PasIp.getIp(c.getAgent().getRemoteAddress()))&&clientid.equals(c.getUserid())){
                 return c.getClient();
             }
         }

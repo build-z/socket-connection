@@ -17,14 +17,13 @@
 <div id="img-container">
     <ul id="img-list"></ul>
 </div>
+<div id="newsession"></div>
 <script>
    // var hostname = "${hostname!''}"  , schema = "${schema!'http'}", port = "${webimport!''}" , userid = "${user.id!''}" , session = "${sessionid!''}" , orgi = "${orgi!''}";
     //var socket = io.connect('${schema!'http'}://'+hostname+':${port}/im/user?userid=${userid!''}&orgi=${orgi!''}&session=${sessionid!''}&appid=${appid!''}&osname=${(osname!'')?url}&browser=${(browser!'')?url}<#if skill??>&skill=${skill}</#if><#if username??>&nickname=${username}</#if><#if agent??>&agent=${agent}</#if>');
     //var socket = io.connect("http://10.33.60.8:9099/im/agent/?userid=2222&toid=1111");
    var socket = io.connect("http://10.33.60.8:9099/im/agent");
     socket.on('connect',function(){
-        //service.sendRequestMessage();
-        //output('<span id="connect-message">'+ new Date().format("yyyy-MM-dd hh:mm:ss") + ' 开始沟通' +'</span>' , 'message connect-message');
         alert("与客户连接成功");
     })
     socket.on("agentstatus",function(data){
@@ -51,7 +50,27 @@
        reader.readAsDataURL(blob);
    });
    socket.on("new",function(data){
-       console.log("data")
+       console.log("新连接客户:"+data)
+       var input = document.createElement("input");
+       input.type="text";
+       input.name='file';
+       var btn = document.createElement("input");
+       btn.type='button';
+       btn.value='发送';
+       btn.onclick = function sub(){
+        message = input.value;
+        socket.emit("message",{
+            userid : data,
+            message :message
+        })
+           input.value = "";
+       };
+       var newdiv = document.createElement("div");
+       newdiv.appendChild(input);
+       newdiv.appendChild(btn);
+       var d = document.getElementById("newsession");
+       d.appendChild(newdiv);
+
    });
    socket.on("clientstatus",function(data){
        console.log("data")
@@ -65,20 +84,10 @@
     })
     socket.on('message', function(data) {
         //var chat=document.getElementsByClassName('chatting-left').innerText;
-
-       // chat = data.message;
         var outText = document.getElementById("outText");
-        outText.value = outText.value+"\n"+"用户: "+data;
-       // outText.
+        outText.value = outText.value+"\n"+"用户"+data.userid+":"+data.message;
         console.log("客户说:"+data);
-        /* if(data.messageType == "image"){
-             chat = "<a href='"+data.message+"_original' target='_blank'><img src='"+data.message+"' class='ukefu-media-image'/></a>" ;
-         }
-         if(data.calltype == "in"){
-             output('<div class="chat-right"> <img class="user-img" src="/im/img/user.png" alt=""><div class="chat-message"><label class="time">'+data.createtime+'</label><label  class="user">'+data.nickName+'</label> </div><div class="chatting-right"><i class="arrow arrow${inviteData.consult_dialog_color!''}"></i><div class="chat-content theme${inviteData.consult_dialog_color!''}">'+chat+'</div></div>' , "chat-block");
-         }else if(data.calltype == "out"){
-             output('<div class="chat-left"> <img class="user-img" src="<#if inviteData?? && inviteData.consult_dialog_headimg??>/res/image.html?id=${inviteData.consult_dialog_headimg?url}<#else>/images/agent.png</#if>" alt=""><div class="chat-message"><label  class="user">'+data.nickName+'</label><label class="time">'+data.createtime+'</label> </div><div class="chatting-left"><i class="arrow"></i><div class="chat-content">'+chat+'</div></div>' , "chat-block");
-         }*/
+
     });
 
     socket.on('disconnect',function() {
@@ -112,7 +121,10 @@
 
                var reader = new FileReader();
                reader.onload = function(e) {
-                   socket.emit('img', e.target.result);
+                   socket.emit('img', {
+                       data : e.target.result,
+                       userid : "10.33.60.8:3314"
+                    });
                };
 
                reader.readAsArrayBuffer(file);

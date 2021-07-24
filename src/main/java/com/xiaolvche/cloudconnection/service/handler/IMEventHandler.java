@@ -15,6 +15,7 @@ import com.xiaolvche.cloudconnection.util.Tlaking;
 import com.xiaolvche.cloudconnection.util.client.SocketClients;
 import com.xiaolvche.cloudconnection.util.onlineAgent.OnlineAgentUtil;
 import com.xiaolvche.cloudconnection.vo.AgBean;
+import com.xiaolvche.cloudconnection.vo.ChatMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import sun.management.resources.agent;
 
@@ -83,6 +84,7 @@ public class IMEventHandler
 					conversation.setClient(client);
 					tlaking.addConversation(conversation);
 					System.out.println("已经为您分配客服");
+					agent.sendEvent("new", ip);
 					client.sendEvent("agentstatus", "客服连接成功");
 				}
 
@@ -181,7 +183,10 @@ public class IMEventHandler
 		String agent = tlaking.getAgentPos(ip);
 		if(agent!=null){
 			System.out.println("发给"+agent+"客服");
-        	socketClients.sendAgentEventMessage(agent, "message", data);
+			ChatMessage chatMessage = new ChatMessage();
+			chatMessage.setMessage(data);
+			chatMessage.setUserid(ip);
+			socketClients.sendAgentEventMessage(agent, "message",chatMessage);
 			System.out.println("客服收到客户的数据:"+data);
 		}
 		else{

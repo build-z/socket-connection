@@ -14,6 +14,7 @@ import com.xiaolvche.cloudconnection.util.ServiceQuene;
 import com.xiaolvche.cloudconnection.util.Tlaking;
 import com.xiaolvche.cloudconnection.util.client.SocketClients;
 import com.xiaolvche.cloudconnection.vo.AgBean;
+import com.xiaolvche.cloudconnection.vo.ChatMessage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import sun.management.resources.agent;
@@ -58,6 +59,7 @@ public class AgentEventHandler
             conversation.setCreatetime(new Date());
             tlaking.addConversation(conversation);
             serviceQuene.agentService(ip);
+            client.sendEvent("new", ip);
             userClient.sendEvent("agentstatus", "客服连接成功");
         }
     }  
@@ -95,9 +97,12 @@ public class AgentEventHandler
     }
 
     @OnEvent(value = "img")
-    public void loadImg(SocketIOClient client, byte[] data, AckRequest ackRequest){
+    public void loadImg(SocketIOClient client, ChatMessage chatMessage, AckRequest ackRequest){
         String ip = PasIp.getIp(client.getRemoteAddress());
-        SocketIOClient client1 = tlaking.getClient(ip);
+        byte[] data =chatMessage.getData();
+        String userid = chatMessage.getUserid();
+        System.out.println("传照片给:"+userid);
+        SocketIOClient client1 = tlaking.getClient(ip,userid);
         if(client1!=null){
             client1.sendEvent("img", data);
         }
@@ -115,12 +120,14 @@ public class AgentEventHandler
 
   //消息接收入口，当接收到消息后，查找发送目标客户端，并且向该客户端发送消息，且给自己发送消息
     @OnEvent(value = "message")  
-    public void onEvent(SocketIOClient client, AckRequest request, String data)
+    public void onEvent(SocketIOClient client, AckRequest request, ChatMessage chatMessage)
     {
 
+        String data = chatMessage.getMessage();
         String ip = PasIp.getIp(client.getRemoteAddress());
-        System.out.println("客服寻找:"+PasIp.getIp(client.getRemoteAddress()));
-        String clientPos = tlaking.getClientPos(ip);
+        String userid = chatMessage.getUserid();
+        String clientPos = userid;
+        //String clientPos = tlaking.getClientPos(ip);
     	System.out.println("客户收到的消息："+data);
     	if(clientPos!=null){
             System.out.println("发给"+clientPos+"用户");
