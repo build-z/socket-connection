@@ -114,7 +114,8 @@ public class IMEventHandler
 				tlaking.stop(ip);
 				//agent.sendEvent("new", "用户走了···");
 				if (agent != null){
-					serviceQuene.saveAgent(PasIp.getIp(agent.getRemoteAddress()), new AgBean(agent,7,0));
+					serviceQuene.finishAgent(PasIp.getIp(agent.getRemoteAddress()));
+					//serviceQuene.saveAgent(PasIp.getIp(agent.getRemoteAddress()), new AgBean(agent,7,0));
 				SocketIOClient user = serviceQuene.geClient();
 				if (user != null) {
 					String userid = PasIp.getIp(user.getRemoteAddress());

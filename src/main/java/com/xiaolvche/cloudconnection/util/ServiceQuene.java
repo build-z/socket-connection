@@ -68,8 +68,10 @@ public class ServiceQuene {
         System.out.println("客服离开服务队列,"+"客服人数:"+ agentQuene.size());
     }
 
+    //客服服务人数+1
     public  void  agentService(String agentid){
         AgBean agBean = agentQuene.get(agentid);
+        if(agBean==null) return;
         Integer servingnum = agBean.getServingnum();
         if(++servingnum>=agBean.getAccpetnum()){
             removeAgent(agentid);
@@ -105,6 +107,15 @@ public class ServiceQuene {
     public void removeClient(String userid){
         System.out.println("客户离开就绪队列");
         clientQuene.remove(userid);
+    }
+    public  void finishAgent(String agentid){
+        AgBean agBean = agentQuene.get(agentid);
+        if(agBean==null) return;
+        Integer servingnum = agBean.getServingnum();
+        servingnum--;
+        agBean.setServingnum(servingnum);
+        agentQuene.put(agentid, agBean);
+        System.out.println(agentid+" 服务人数:"+servingnum);
     }
 
 

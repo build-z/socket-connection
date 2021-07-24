@@ -23,6 +23,7 @@ public class Tlaking {
     ConversationService conversationService;
     ServiceQuene serviceQuene = ApplicationContextProvider.getBean(ServiceQuene.class);
     private static List<Conversation> seat = new ArrayList();
+    //添加一条会话记录
     public void addConversation(Conversation conversation){
         if(conversation!=null){
             seat.add(conversation);
@@ -61,10 +62,13 @@ public class Tlaking {
                Conversation c = seat.get(i);
                c.setEndtime(new Date());
                 conversationService.save(c);
+                serviceQuene.finishAgent(seat.get(i).getKefuid());
                 seat.remove(i);
             }
         }
     }
+
+    //客服断开连接
     public void agentStop(String agentid){
         if(agentid==null) return;
         for(int i=0;i<seat.size();i++){
@@ -74,6 +78,8 @@ public class Tlaking {
             }
         }
     }
+
+    //通过用户id查询负责的客服
     public SocketIOClient getAgent(String userid){
         if(userid==null)return null;
         for (Conversation c:seat) {
@@ -83,6 +89,8 @@ public class Tlaking {
         }
         return null;
     }
+
+    //通过客服id客服id获取客户
     public SocketIOClient getClient(String agentid,String clientid){
         if(agentid==null||clientid==null)return null;
         for (Conversation c:seat) {
@@ -92,6 +100,7 @@ public class Tlaking {
         }
         return null;
     }
+
     public void addClient(SocketIOClient agent, SocketIOClient client){
         String agentid = PasIp.getIp(agent.getRemoteAddress());
         String clientid = PasIp.getIp(client.getRemoteAddress());
