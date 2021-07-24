@@ -1,17 +1,22 @@
 package com.xiaolvche.cloudconnection.util.client;
 
 import com.corundumstudio.socketio.SocketIOClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
+@Component
 public class SocketClients {
 	
 	private static SocketClients clients = new SocketClients();
-	
-	private SocketIMClient imClients = new SocketIMClient();
-	private SocketAgentClient agentClients = new SocketAgentClient();
-	private SocketIMClient entIMClients = new SocketIMClient();
+	@Autowired
+	private SocketIMClient imClients;
+	@Autowired
+	private SocketAgentClient agentClients;
+	//@Autowired
+	//private SocketIMClient entIMClients;
+
 	//private NettyCallCenterClient callCenterClients = new NettyCallCenterClient();
 	
 	public static SocketClients getInstance(){
@@ -58,7 +63,7 @@ public class SocketClients {
 		}
 	}
 	
-	public void setEntImClients(SocketIMClient entIMClients) {
+	/*public void setEntImClients(SocketIMClient entIMClients) {
 		this.entIMClients = entIMClients;
 	}
 	public void putEntIMEventClient(String id , SocketIOClient userClient){
@@ -75,7 +80,7 @@ public class SocketClients {
 	}
 	public int getEntIMClientsNum(String user){
 		return entIMClients.getClients(user)!=null ? entIMClients.getClients(user).size() : 0;
-	}
+	}*/
 	
 
 }

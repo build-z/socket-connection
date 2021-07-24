@@ -6,7 +6,6 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
-import com.sun.xml.internal.ws.encoding.MtomCodec;
 import com.xiaolvche.cloudconnection.bean.Conversation;
 import com.xiaolvche.cloudconnection.config.ApplicationContextProvider;
 import com.xiaolvche.cloudconnection.util.PasImg;
@@ -15,14 +14,13 @@ import com.xiaolvche.cloudconnection.util.ServiceQuene;
 import com.xiaolvche.cloudconnection.util.Tlaking;
 import com.xiaolvche.cloudconnection.util.client.SocketClients;
 import com.xiaolvche.cloudconnection.util.onlineAgent.OnlineAgentUtil;
+import com.xiaolvche.cloudconnection.vo.AgBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.multipart.MultipartFile;
+import sun.management.resources.agent;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Date;
@@ -33,10 +31,10 @@ public class IMEventHandler
 
 
 	protected SocketIOServer server;
-
 	Tlaking tlaking = ApplicationContextProvider.getBean(Tlaking.class);
 	OnlineAgentUtil onlineAgentUtil = ApplicationContextProvider.getBean(OnlineAgentUtil.class);
 	ServiceQuene serviceQuene = ApplicationContextProvider.getBean(ServiceQuene.class);
+	SocketClients socketClients = ApplicationContextProvider.getBean(SocketClients.class);
 
 
 
@@ -61,21 +59,18 @@ public class IMEventHandler
         try {
 			String ip = PasIp.getIp(client.getRemoteAddress());
 			System.out.println("有新的客户连接~~~"+ip);
-        	//System.out.println(ip);
-			//String user = client.getHandshakeData().getSingleUrlParam("userid") ;
-
-			
-
 				/**
 				 * 用户进入到对话连接 ， 排队用户请求 , 如果返回失败，表示当前坐席全忙，用户进入排队状态，当前提示信息 显示 当前排队的队列位置，不可进行对话，用户发送的消息作为留言处理
 				 */
 
-				SocketClients.getInstance().putIMEventClient(ip, client);
-				String onlineAgent = onlineAgentUtil.getOnlineAgent(ip);
-				SocketIOClient agent = serviceQuene.getAgent(onlineAgent);
+				//String zid = "1";
+				socketClients.putIMEventClient(ip, client);
+				//String onlineAgent = onlineAgentUtil.getOnlineAgent(ip,zid);
+				//SocketIOClient agent = serviceQuene.getAgent(onlineAgent);
+				SocketIOClient agent = serviceQuene.getAgent(ip);
 				if(agent==null){
 					System.out.println("没有客服在服务");
-					//SocketClients.getInstance().sendIMEventMessage(ip, "status", "客服正忙，您正在排队···");
+					//socketClients.sendIMEventMessage(ip, "status", "客服正忙，您正在排队···");
 					serviceQuene.saveClient(ip, client);
 				}
 				else {
@@ -109,18 +104,19 @@ public class IMEventHandler
 				/**
 				 * 用户主动断开服务
 				 */
-				SocketClients.getInstance().removeIMEventClient(ip, client.getSessionId().toString());
+				String zid = "1";
+				socketClients.removeIMEventClient(ip, client.getSessionId().toString());
 				serviceQuene.removeClient(ip);
 				SocketIOClient agent = tlaking.getAgent(ip);
 				tlaking.stop(ip);
 				//agent.sendEvent("new", "用户走了···");
 				if (agent != null){
-					serviceQuene.saveAgent(PasIp.getIp(agent.getRemoteAddress()), agent);
+					serviceQuene.saveAgent(PasIp.getIp(agent.getRemoteAddress()), new AgBean(agent,7,0));
 				SocketIOClient user = serviceQuene.geClient();
 				if (user != null) {
 					String userid = PasIp.getIp(user.getRemoteAddress());
-					String onlineAgent = onlineAgentUtil.getOnlineAgent(userid);
-					SocketIOClient agent1 = serviceQuene.getAgent(onlineAgent);
+					//String onlineAgent = onlineAgentUtil.getOnlineAgent(userid,zid);
+					SocketIOClient agent1 = serviceQuene.getAgent(userid);
 					String agentid = PasIp.getIp(agent1.getRemoteAddress());
 					Conversation conversation = null;
 					if (agent1 != null) {
@@ -165,26 +161,11 @@ public class IMEventHandler
 			agent.sendEvent("img", data);
 		}
 		else{
-			System.out.println("客户发的消息没人接收:"+data);
+			System.out.println("客户发的消息没人接收:");
 			serviceQuene.saveClient(ip, client);
 			//client.sendEvent("agentstatus", "客服正忙，您正在排队···");
 		}
-		System.out.println("图片长度:"+data.length);
-		ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-
-		FileChannel channel = null;
-		try {
-			channel = new FileOutputStream("img.png").getChannel();
-			while (byteBuffer.hasRemaining()){
-				channel.write(byteBuffer);
-			}
-			channel.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		PasImg.generateImage(data);
 
 
 	}
@@ -199,7 +180,7 @@ public class IMEventHandler
 		String agent = tlaking.getAgentPos(ip);
 		if(agent!=null){
 			System.out.println("发给"+agent+"客服");
-        	SocketClients.getInstance().sendAgentEventMessage(agent, "message", data);
+        	socketClients.sendAgentEventMessage(agent, "message", data);
 			System.out.println("客服收到客户的数据:"+data);
 		}
 		else{

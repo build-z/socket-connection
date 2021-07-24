@@ -3,7 +3,7 @@ package com.xiaolvche.cloudconnection.util;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.xiaolvche.cloudconnection.bean.Conversation;
 import com.xiaolvche.cloudconnection.config.ApplicationContextProvider;
-import com.xiaolvche.cloudconnection.mapper.service.ConversationService;
+import com.xiaolvche.cloudconnection.service.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

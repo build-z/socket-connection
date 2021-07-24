@@ -2,7 +2,7 @@ package com.xiaolvche.cloudconnection.controller;
 
 
 import com.xiaolvche.cloudconnection.bean.Conversation;
-import com.xiaolvche.cloudconnection.mapper.service.ConversationService;
+import com.xiaolvche.cloudconnection.service.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Controller;
