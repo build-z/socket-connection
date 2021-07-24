@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * @author liaoxh
@@ -36,4 +37,6 @@ public class Conversation implements Serializable{
     private SocketIOClient agent;
     @TableField(exist = false)
     private SocketIOClient client;
+    @TableField(exist = false)
+    private HashMap<String,SocketIOClient> clinets;
 }
