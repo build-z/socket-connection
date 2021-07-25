@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Date;
+import java.util.UUID;
 
 //@Component
 public class IMEventHandler     
@@ -174,7 +175,8 @@ public class IMEventHandler
 
 		FileChannel channel = null;
 		try {
-			channel = new FileOutputStream("img.png").getChannel();
+			String filename = UUID.randomUUID().toString().replaceAll("-", "");
+			channel = new FileOutputStream("D:\\picture\\temppicture\\"+filename+".png").getChannel();
 			while (byteBuffer.hasRemaining()){
 				channel.write(byteBuffer);
 			}

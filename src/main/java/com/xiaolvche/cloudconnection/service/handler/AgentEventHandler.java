@@ -12,6 +12,7 @@ import com.xiaolvche.cloudconnection.util.PasIp;
 import com.xiaolvche.cloudconnection.util.ServiceQuene;
 import com.xiaolvche.cloudconnection.util.Tlaking;
 import com.xiaolvche.cloudconnection.util.client.SocketClients;
+import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import sun.management.resources.agent;
@@ -22,8 +23,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Date;
+import java.util.UUID;
 
-
+@Log4j
 public class AgentEventHandler
 {  
 	protected SocketIOServer server;
@@ -107,7 +109,8 @@ public class AgentEventHandler
 
         FileChannel channel = null;
         try {
-            channel = new FileOutputStream("img.png").getChannel();
+            String filename = UUID.randomUUID().toString().replaceAll("-", "");
+            channel = new FileOutputStream("D:\\picture\\temppicture\\"+filename+".png").getChannel();
             while (byteBuffer.hasRemaining()){
                 channel.write(byteBuffer);
             }
