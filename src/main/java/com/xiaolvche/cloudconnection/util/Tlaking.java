@@ -3,12 +3,14 @@ package com.xiaolvche.cloudconnection.util;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.xiaolvche.cloudconnection.bean.Conversation;
 import com.xiaolvche.cloudconnection.config.ApplicationContextProvider;
-import com.xiaolvche.cloudconnection.mapper.service.ConversationService;
+import com.xiaolvche.cloudconnection.service.ConversationService;
+import com.xiaolvche.cloudconnection.util.client.SocketClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -21,6 +23,7 @@ public class Tlaking {
     ConversationService conversationService;
     ServiceQuene serviceQuene = ApplicationContextProvider.getBean(ServiceQuene.class);
     private static List<Conversation> seat = new ArrayList();
+    //添加一条会话记录
     public void addConversation(Conversation conversation){
         if(conversation!=null){
             seat.add(conversation);
@@ -59,10 +62,13 @@ public class Tlaking {
                Conversation c = seat.get(i);
                c.setEndtime(new Date());
                 conversationService.save(c);
+                serviceQuene.finishAgent(seat.get(i).getKefuid());
                 seat.remove(i);
             }
         }
     }
+
+    //客服断开连接
     public void agentStop(String agentid){
         if(agentid==null) return;
         for(int i=0;i<seat.size();i++){
@@ -72,6 +78,8 @@ public class Tlaking {
             }
         }
     }
+
+    //通过用户id查询负责的客服
     public SocketIOClient getAgent(String userid){
         if(userid==null)return null;
         for (Conversation c:seat) {
@@ -81,13 +89,38 @@ public class Tlaking {
         }
         return null;
     }
-    public SocketIOClient getClient(String agentid){
-        if(agentid==null)return null;
+
+    //通过客服id客服id获取客户
+    public SocketIOClient getClient(String agentid,String clientid){
+        if(agentid==null||clientid==null)return null;
         for (Conversation c:seat) {
-            if(agentid.equals(PasIp.getIp(c.getAgent().getRemoteAddress()))){
+            if(agentid.equals(PasIp.getIp(c.getAgent().getRemoteAddress()))&&clientid.equals(c.getUserid())){
                 return c.getClient();
             }
         }
         return null;
+    }
+
+    public void addClient(SocketIOClient agent, SocketIOClient client){
+        String agentid = PasIp.getIp(agent.getRemoteAddress());
+        String clientid = PasIp.getIp(client.getRemoteAddress());
+        if(agentid==null) return;
+        for(int i=0;i<seat.size();i++){
+            if(agentid.equals(seat.get(i).getKefuid())){
+                Conversation c = seat.get(i);
+                HashMap<String, SocketIOClient> map = c.getClinets();
+                map.put(clientid, client);
+                return ;
+            }
+        }
+        HashMap<String, SocketIOClient> hashMap = new HashMap<>();
+        hashMap.put(clientid, client);
+        Conversation conversation = new Conversation();
+        conversation.setUserid(clientid);
+        conversation.setKefuid(agentid);
+        conversation.setAgent(client);
+        conversation.setClient(client);
+        conversation.setCreatetime(new Date());
+
     }
 }

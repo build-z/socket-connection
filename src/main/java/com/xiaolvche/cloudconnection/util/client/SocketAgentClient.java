@@ -2,9 +2,10 @@ package com.xiaolvche.cloudconnection.util.client;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.google.common.collect.ArrayListMultimap;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-
+@Component
 public class SocketAgentClient implements SocketClient{
 	
 	private ArrayListMultimap<String, SocketIOClient> agentClientsMap = ArrayListMultimap.create();

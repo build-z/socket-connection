@@ -2,9 +2,13 @@ package com.xiaolvche.cloudconnection.util;
 
 import sun.misc.BASE64Decoder;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.UUID;
 
 /**
  * @author liaoxh
@@ -12,32 +16,25 @@ import java.io.OutputStream;
  */
 
 public class PasImg {
-    public static boolean generateImage(String imgStr, String filename) {
+    public static void generateImage(byte[] data) {
 
-        if (imgStr == null) {
-            return false;
-        }
-       // BASE64Decoder decoder = new BASE64Decoder();
+        System.out.println("图片长度:" + data.length);
+        String newFileName = UUID.randomUUID().toString().replaceAll("-", "");
+        String filePath = "D:\\picture\\temppicture\\";
+        System.out.println(newFileName);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+
+        FileChannel channel = null;
         try {
-            // 解密
-           // byte[] b = decoder.decodeBuffer(imgStr);
-            byte [] b =imgStr.getBytes();
-            // 处理数据
-            for(int i = 0; i < b.length; ++i) {
-                if (b[i] < 0) {
-                    b[i] += 256;
-                }
+            channel = new FileOutputStream(filePath+newFileName+".png").getChannel();
+            while (byteBuffer.hasRemaining()) {
+                channel.write(byteBuffer);
             }
-            OutputStream out = new FileOutputStream(filename);
-            out.write(b);
-            out.flush();
-            out.close();
-            return true;
+            channel.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return false;
-
     }
 }

@@ -2,14 +2,12 @@ package com.xiaolvche.cloudconnection.util.onlineAgent;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xiaolvche.cloudconnection.bean.Conversation;
-import com.xiaolvche.cloudconnection.mapper.service.ConversationService;
+import com.xiaolvche.cloudconnection.service.ConversationService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
@@ -26,15 +24,15 @@ public class OnlineAgentUtil {
     /*public static OnlineAgentUtil getInstance(){
         return onlineAgentUtil ;
     }*/
-    public   String  getOnlineAgent(String userid){
+    public   String  getOnlineAgent(String userid,String zid){
         QueryWrapper<Conversation> wrapper = new QueryWrapper<>();
         wrapper.eq("userid", userid);
         wrapper.orderByDesc("endtime");
         if(conversationService!=null){
-        List<Conversation> list = conversationService.list(wrapper);
-        if(list.size()>0)
-            return list.get(0).getKefuid();
-        else return null;
+            List<Conversation> list = conversationService.list(wrapper);
+            if(list.size()>0)
+                return list.get(0).getKefuid();
+            else return null;
         }
         else
         System.out.println("不能使用数据库连接");
